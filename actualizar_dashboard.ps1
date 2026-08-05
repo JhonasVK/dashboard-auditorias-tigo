@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$ExcelPath = "C:\Users\jvodn\Desktop\Capacitacion\Cerificacion\TIGO\Auditorias_en_Terreno\Dashboard_Auditorias_TIGO.xlsx"
+$ExcelPath = "C:\Users\jvodn\Downloads\Web\BBDD\Dashboard_Auditorias_TIGO.xlsx"
 $RepoDir   = "C:\Users\jvodn\Downloads\Web\dashboard-auditorias-tigo"
 $TemplatePath = Join-Path $RepoDir "template.html"
 $OutputPath   = Join-Path $RepoDir "index.html"
