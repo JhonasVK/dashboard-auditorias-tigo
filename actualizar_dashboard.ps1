@@ -117,7 +117,15 @@ try {
     } else {
         $fecha = Get-Date -Format "yyyy-MM-dd HH:mm"
         git commit -q -m "Actualizar datos de auditorías ($fecha)"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: el commit falló. Revisa el mensaje de git de arriba (por ejemplo, identidad de git no configurada)." -ForegroundColor Red
+            exit 1
+        }
         git push -q
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: el push a GitHub falló. Revisa tu conexión o sesión de 'gh auth status'." -ForegroundColor Red
+            exit 1
+        }
         Write-Host "==> Publicado. El sitio se actualizará en 1-2 minutos en:"
         Write-Host "    https://jhonasvk.github.io/dashboard-auditorias-tigo/" -ForegroundColor Cyan
     }
