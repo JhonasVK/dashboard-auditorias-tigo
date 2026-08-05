@@ -1,0 +1,710 @@
+<title>Auditorías de Terreno — TIGO</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #E7EFEE; --ink-soft: #A9BDBA; --muted: #7E938F;
+      --paper: #0A1315; --card: #101C1F; --card-raised: #142225;
+      --border: #1D2E31; --border-soft: #18262A;
+      --accent: #52DCD2; --accent-ink: #06181A; --accent-soft: rgba(82,220,210,0.14);
+      --good: #56D999; --good-soft: rgba(86,217,153,0.14);
+      --warn: #F0B94B; --warn-soft: rgba(240,185,75,0.14);
+      --bad: #F1786C; --bad-soft: rgba(241,120,108,0.14);
+      --track: #1B2C2F;
+      --shadow: 0 1px 0 rgba(0,0,0,0.4);
+    }
+  }
+  :root {
+    --ink: #101B1D; --ink-soft: #3F5350; --muted: #647A76;
+    --paper: #F2F6F5; --card: #FFFFFF; --card-raised: #FBFDFC;
+    --border: #DCE6E3; --border-soft: #E9EFED;
+    --accent: #0B7C82; --accent-ink: #FFFFFF; --accent-soft: #E1F1F0;
+    --good: #1C8A5D; --good-soft: #E4F6ED;
+    --warn: #B0740D; --warn-soft: #FBF0DC;
+    --bad: #C34438; --bad-soft: #FBE9E6;
+    --track: #E7EEEC;
+    --shadow: 0 1px 2px rgba(16,27,29,0.06);
+  }
+  :root[data-theme="dark"] {
+    --ink: #E7EFEE; --ink-soft: #A9BDBA; --muted: #7E938F;
+    --paper: #0A1315; --card: #101C1F; --card-raised: #142225;
+    --border: #1D2E31; --border-soft: #18262A;
+    --accent: #52DCD2; --accent-ink: #06181A; --accent-soft: rgba(82,220,210,0.14);
+    --good: #56D999; --good-soft: rgba(86,217,153,0.14);
+    --warn: #F0B94B; --warn-soft: rgba(240,185,75,0.14);
+    --bad: #F1786C; --bad-soft: rgba(241,120,108,0.14);
+    --track: #1B2C2F;
+    --shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  :root[data-theme="light"] {
+    --ink: #101B1D; --ink-soft: #3F5350; --muted: #647A76;
+    --paper: #F2F6F5; --card: #FFFFFF; --card-raised: #FBFDFC;
+    --border: #DCE6E3; --border-soft: #E9EFED;
+    --accent: #0B7C82; --accent-ink: #FFFFFF; --accent-soft: #E1F1F0;
+    --good: #1C8A5D; --good-soft: #E4F6ED;
+    --warn: #B0740D; --warn-soft: #FBF0DC;
+    --bad: #C34438; --bad-soft: #FBE9E6;
+    --track: #E7EEEC;
+    --shadow: 0 1px 2px rgba(16,27,29,0.06);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Segoe UI", ui-sans-serif, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono, .tabnum { font-family: "Cascadia Mono", Consolas, ui-monospace, "SFMono-Regular", Menlo, monospace; font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { font-weight: 700; text-wrap: balance; margin: 0; }
+  .eyebrow {
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  a { color: var(--accent); }
+  button, select, input { font-family: inherit; }
+  ::selection { background: var(--accent-soft); }
+
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 28px clamp(16px,3.4vw,40px) 90px; }
+
+  /* ---------- Header ---------- */
+  header.page { display:flex; flex-direction:column; gap:6px; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+  .brand-row { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .brand-mark {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:8px; background:var(--accent); color:var(--accent-ink);
+    font-weight:800; font-size:14px; letter-spacing:0.02em; flex:none;
+  }
+  h1.title { font-size: clamp(22px,2.6vw,30px); letter-spacing:-0.01em; }
+  .meta-line { color: var(--muted); font-size:13.5px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .meta-line .dot { opacity:.5; }
+
+  /* ---------- Filter bar ---------- */
+  .filterbar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 22px;
+    display:flex; flex-direction:column; gap:12px;
+    box-shadow: var(--shadow);
+  }
+  .filter-row { display:flex; gap:18px; flex-wrap:wrap; align-items:center; }
+  .filter-group { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .filter-group .fg-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-right:2px; }
+  .chip {
+    border:1px solid var(--border); background:var(--card); color:var(--ink-soft);
+    padding:5px 12px; border-radius:999px; font-size:13px; cursor:pointer; font-weight:600;
+    transition: background .12s, color .12s, border-color .12s;
+    user-select:none;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  select.techsel {
+    border:1px solid var(--border); background:var(--card); color:var(--ink);
+    padding:6px 10px; border-radius:8px; font-size:13.5px; min-width:190px; cursor:pointer;
+  }
+  .searchbox { position:relative; flex:1; min-width:200px; }
+  .searchbox input {
+    width:100%; border:1px solid var(--border); background:var(--card); color:var(--ink);
+    padding:7px 12px 7px 30px; border-radius:8px; font-size:13.5px;
+  }
+  .searchbox input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+  .searchbox svg { position:absolute; left:9px; top:50%; transform:translateY(-50%); opacity:.5; }
+  .filter-status { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--muted); }
+  .btn-reset {
+    border:1px solid var(--border); background:transparent; color:var(--muted);
+    padding:6px 12px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .btn-reset:hover { color:var(--bad); border-color:var(--bad); }
+  .count-badge { font-weight:700; color:var(--ink); }
+
+  /* ---------- KPI grid ---------- */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:24px; }
+  .kpi-card {
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; display:flex; flex-direction:column; gap:6px;
+    border-top:3px solid var(--border);
+  }
+  .kpi-card[data-sem="good"] { border-top-color: var(--good); }
+  .kpi-card[data-sem="warn"] { border-top-color: var(--warn); }
+  .kpi-card[data-sem="bad"] { border-top-color: var(--bad); }
+  .kpi-card[data-sem="neutral"] { border-top-color: var(--accent); }
+  .kpi-label { font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); }
+  .kpi-value { font-size:30px; font-weight:700; line-height:1; }
+  .kpi-value .unit { font-size:15px; font-weight:600; color:var(--muted); margin-left:2px; }
+  .kpi-sub { font-size:12.5px; color:var(--muted); }
+  .pill { display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:700; }
+  .pill.good { background:var(--good-soft); color:var(--good); }
+  .pill.warn { background:var(--warn-soft); color:var(--warn); }
+  .pill.bad  { background:var(--bad-soft);  color:var(--bad); }
+  .pill.neutral { background:var(--accent-soft); color:var(--accent); }
+  .pill-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  /* ---------- Section shell ---------- */
+  section.block { margin-bottom:26px; }
+  .block-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .block-head h2 { font-size:16.5px; }
+  .block-head .block-note { font-size:12.5px; color:var(--muted); }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+
+  /* ---------- Charts row ---------- */
+  .charts-row { display:grid; grid-template-columns:1.15fr 1fr 1fr; gap:14px; }
+  @media (max-width:900px) { .charts-row { grid-template-columns:1fr; } }
+
+  table.mini { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
+  table.mini th { text-align:left; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:700; padding:4px 6px; border-bottom:1px solid var(--border); }
+  table.mini td { padding:6px 6px; border-bottom:1px solid var(--border-soft); }
+  table.mini tr:last-child td { border-bottom:none; }
+  table.mini td.num, table.mini th.num { text-align:right; }
+
+  .barrows { display:flex; flex-direction:column; gap:11px; margin-top:8px; }
+  .barrow { display:grid; grid-template-columns: 108px 1fr 46px; gap:10px; align-items:center; }
+  .barrow-label { font-size:12.8px; color:var(--ink-soft); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .barrow-track { height:9px; border-radius:5px; background:var(--track); overflow:hidden; }
+  .barrow-fill { height:100%; border-radius:5px; }
+  .barrow-value { font-size:12.5px; font-weight:700; text-align:right; }
+
+  .checklist-list { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  .cl-row { display:grid; grid-template-columns:230px 1fr 130px; gap:12px; align-items:center; }
+  @media (max-width:760px) { .cl-row { grid-template-columns:140px 1fr 90px; } }
+  .cl-label { font-size:13px; color:var(--ink-soft); font-weight:600; }
+  .cl-track { height:10px; border-radius:5px; background:var(--track); overflow:hidden; }
+  .cl-fill { height:100%; border-radius:5px; }
+  .cl-right { display:flex; align-items:center; justify-content:flex-end; gap:8px; font-size:12.5px; }
+  .cl-pct { font-weight:700; width:48px; text-align:right; }
+  .cl-breakdown { color:var(--muted); font-size:11px; }
+
+  /* ---------- Data tables ---------- */
+  .table-scroll { overflow-x:auto; border-radius:10px; }
+  table.data { width:100%; border-collapse:collapse; font-size:13.2px; min-width:640px; }
+  table.data th { position:sticky; top:0; background:var(--card); text-align:left; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:700; padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap; cursor:pointer; }
+  table.data th:hover { color:var(--accent); }
+  table.data th .arrow { opacity:.5; font-size:10px; margin-left:3px; }
+  table.data td { padding:9px 10px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  table.data tbody tr:hover { background:var(--card-raised); }
+  table.data td.num { text-align:right; }
+  .obs-cell { max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  tr.exp-row { cursor:pointer; }
+  tr.detail-row td { background:var(--card-raised); padding:14px 16px; }
+  .detail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px 16px; margin-bottom:10px; }
+  .detail-item { display:flex; flex-direction:column; gap:2px; }
+  .detail-item .di-label { font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700; }
+  .detail-obs { font-size:13px; color:var(--ink-soft); padding-top:6px; border-top:1px solid var(--border-soft); }
+
+  .tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:6px; font-size:11.5px; font-weight:700; }
+  .tag.si { background:var(--good-soft); color:var(--good); }
+  .tag.no { background:var(--bad-soft); color:var(--bad); }
+  .tag.otro { background:var(--warn-soft); color:var(--warn); }
+
+  .pager { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; font-size:13px; color:var(--muted); flex-wrap:wrap; }
+  .pager button { border:1px solid var(--border); background:var(--card); color:var(--ink); padding:5px 11px; border-radius:7px; cursor:pointer; font-size:13px; font-weight:600; }
+  .pager button:disabled { opacity:.4; cursor:default; }
+  .pager button:not(:disabled):hover { border-color:var(--accent); color:var(--accent); }
+
+  th.sort-active { color: var(--accent); }
+
+  footer.page { margin-top:36px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="page">
+    <div class="brand-row">
+      <span class="brand-mark">TG</span>
+      <h1 class="title">Auditorías de Terreno — TIGO</h1>
+    </div>
+    <div class="meta-line">
+      <span>Calidad técnica FTTH / FTTA</span>
+      <span class="dot">·</span>
+      <span>Zonas: Punta Arenas, Coyhaique, Puerto Natales</span>
+      <span class="dot">·</span>
+      <span>Período: Jun–Ago 2026</span>
+      <span class="dot">·</span>
+      <span id="metaTotal">192 auditorías registradas</span>
+    </div>
+  </header>
+
+  <div class="filterbar">
+    <div class="filter-row">
+      <div class="filter-group" id="grp-zona">
+        <span class="fg-label">Zona</span>
+      </div>
+      <div class="filter-group" id="grp-mes">
+        <span class="fg-label">Mes</span>
+      </div>
+      <div class="filter-group" id="grp-actividad">
+        <span class="fg-label">Actividad</span>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Técnico</span>
+        <select class="techsel" id="selTecnico"><option value="">Todos los técnicos</option></select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="searchbox">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar por auditor, técnico, N° petición u observación…" />
+      </div>
+      <div class="filter-status">
+        <span>Mostrando <span class="count-badge tabnum" id="countShown">192</span> de <span class="tabnum">192</span></span>
+        <button class="btn-reset" id="btnReset">Limpiar filtros</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="kpi-grid" id="kpiGrid"></section>
+
+  <section class="block">
+    <div class="block-head"><h2>Panorama</h2><span class="block-note">Los tres bloques se recalculan según los filtros activos</span></div>
+    <div class="charts-row">
+      <div class="panel" id="panelMes">
+        <div class="eyebrow">Resumen mensual</div>
+        <div id="mesBars" class="barrows"></div>
+        <table class="mini" id="mesTable"></table>
+      </div>
+      <div class="panel" id="panelZona">
+        <div class="eyebrow">Por zona</div>
+        <div id="zonaBars" class="barrows"></div>
+      </div>
+      <div class="panel" id="panelActividad">
+        <div class="eyebrow">Por actividad</div>
+        <div id="actividadBars" class="barrows"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Cumplimiento de checklist técnico</h2>
+      <span class="block-note">% de auditorías con respuesta SI sobre el total filtrado</span>
+    </div>
+    <div class="panel">
+      <div class="checklist-list" id="checklistList"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Desempeño por técnico</h2>
+      <span class="block-note">Clic en un encabezado para ordenar</span>
+    </div>
+    <div class="panel table-scroll">
+      <table class="data" id="tecTable">
+        <thead>
+          <tr>
+            <th data-key="tecnico">Técnico</th>
+            <th data-key="auditorias" class="num">Auditorías</th>
+            <th data-key="conforme" class="num">% Conforme</th>
+            <th data-key="nota" class="num">Nota Estética</th>
+            <th data-key="rotula" class="num">% Rotula CTO</th>
+          </tr>
+        </thead>
+        <tbody id="tecBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Registro de auditorías</h2>
+      <span class="block-note">Clic en una fila para ver el detalle completo del checklist</span>
+    </div>
+    <div class="panel table-scroll">
+      <table class="data" id="mainTable">
+        <thead>
+          <tr>
+            <th data-key="fecha">Fecha</th>
+            <th data-key="zona">Zona</th>
+            <th data-key="actividad">Actividad</th>
+            <th data-key="auditor">Auditor</th>
+            <th data-key="tecnico">Técnico</th>
+            <th data-key="peticion">N° Petición</th>
+            <th data-key="notaEstetica" class="num">Nota</th>
+            <th data-key="clienteConforme">Conforme</th>
+            <th data-key="rotulaCto">Rotula CTO</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody id="mainBody"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span id="pagerInfo"></span>
+      <div style="display:flex; gap:8px;">
+        <button id="pagerPrev">← Anterior</button>
+        <button id="pagerNext">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page">
+    <span>Fuente: Dashboard_Auditorias_TIGO.xlsx · hoja "Datos" (192 registros)</span>
+    <span>Panel generado a partir del archivo Excel original</span>
+  </footer>
+</div>
+
+<script type="application/json" id="dataset">[{"fecha":"2026-06-30","mes":"Jun-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"Inc000038902458","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"FELIPE ANTONIO RIOS CIFUENTES","peticion":"1309875156","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"OTRO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1307725354","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"OTRO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Técnico reutiliza las instalaciones."},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038901917","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"OTRO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente quedó conforme con la reparación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1307730302","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Clienta queda conforme  con instalación y servicio funcionando."},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038903672","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"OTRO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038903997","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"OTRO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación de Deco"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038903038","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"OTRO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1310052721","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-01","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1308985109","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038905985","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"OTRO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1310042629","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"OTRO","reutilizaRoseta":"NO","medicionElectrica":"OTRO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"0 Decodificador no cableado, deja instalado un rouster."},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1310429852","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"OTRO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1310323692","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038904107","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038905487","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1310312335","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1310763758","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación de Deco adicional"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1310343630","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"FELIPE ANTONIO RIOS CIFUENTES","peticion":"1310794831","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"NO","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1310437750","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"1310320513","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038906911","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-02","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"130991651","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038908201","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"OTRO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":6,"observaciones":"Cliente recibe conforme la reparación y no dejá regularizar roseta por pintura"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038907395","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"FELIPE ANTONIO RIOS CIFUENTES","peticion":"1311072345","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1210761394","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente solicito que no se hicieran perforaciones en las instalaciones."},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1310375794","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"OTRO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación y sé instalación de 2 Deco"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1310923081","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación y sé reutilizar por ducto ya qué están hechas"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"1311127285","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":1,"observaciones":"Cliente recibe conforme instalación y Deco son 2"},{"fecha":"2026-07-03","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038907754","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038911543","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"NO","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1311207228","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038909754","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1311016631","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"1311011590","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038909384","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"1311777460","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"Inc000038912526","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1312511224","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación de rutina"},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1312021154","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Hijo de clienta indica que queda conforme con el.servicio, funcionando bien."},{"fecha":"2026-07-06","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1312201566","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MARCOS ALEJANDRO AGUIL.AR ROA","peticion":"1312587403","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación de Décos"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GABRIEL LEONIDAS RAMIREZ IBARRA","peticion":"1312529516","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038913098","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EGON RODRIGO VILLARROEL ZUNIGA","peticion":"Inc000038914363","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038916414","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1311552490","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Al ingresar al.domicilio clienta indica que todo funcionaba bien y que solicito no dejar el deco sin cable, no se visualizan pasamuros."},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"Inc000038915840","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038914288","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038914579","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"OTRO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-07","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1312713095","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038917247","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038917477","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"1312775397","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"Inc000038917093","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038915733","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"Inc000038918075","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación del Deco"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1314031526","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación y el Deco"},{"fecha":"2026-07-08","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1312720452","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación y de los Décos"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"131452941","actividad":"Rutina","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación del Deco"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"1314364293","actividad":"Instalacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1312806144","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":7,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"Inc000038920454","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":55,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"Inc000038920053","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038917876","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO TORRES MILLAQUEN","peticion":"1314500205","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO TORRES MILLAQUEN","peticion":"Inc000038921826","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-09","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1314853556","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación y él Deco"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"1315281550","actividad":"Instalacion","zona":"Puero Natales","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"1312445638","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"Ínc000038921763","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1314999931","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"MIGUEL ALEJANDRO ALVARADO VIVAR","peticion":"1315102032","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"Inc000038922148","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-10","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ROBERTO SALDIVIA HERNANDEZ","peticion":"1315127440","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-11","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1313000972","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Clienta solicita no dejar cableado, indica que debe sacar el cable de la otra empresa, y no quiere mas."},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Manuel Flores","tecnico":"VICTOR HUGO BARRIA ALMONACID","peticion":"1315363962","actividad":"Instalacion","zona":"Puero Natales","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1316214422","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":1,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Inc000038927977","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Inc000038928718","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038926399","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1315973858","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"Inc000038928128","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1315628703","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme el cambió de módem"},{"fecha":"2026-07-13","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Inc000038992984","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"Inc000038930394","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038929901","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":8,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1317490299","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":10,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1317406495","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de Deco por wifi"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1317392761","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"S/D","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reuso instalación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1317794703","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-14","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038931808","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1317956554","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de 3 Décos 1 por cable y 2 por wifi a pedido de cliente"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"1318103367","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"1318117484","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1317996593","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038933756","actividad":"Reparacion","zona":"Puero Natales","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038932484","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1318111033","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1315837353","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"OTRO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Lugar, material deficiente para instalar pasa muro y/o cableado."},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1315060440","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"NO","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Clienta se encuentra conforme con servicio."},{"fecha":"2026-07-15","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1318040306","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"OTRO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Clienta queda muy conforme con la instalación y el trabajo realizado por el técnico."},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1317713216","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de rutina"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038934703","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación cambio de módem"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1317938299","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación dé internet"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038936023","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación sólo configuración"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1319311536","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Técnico instala solo modem en el domicilio y cliente queda conforme con servicio."},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038929744","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Inc000038935102","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Inc000038932584","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación sólo configuración de módem"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"Onc000038933653","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"EDUARDO ANDRES WITTO MANSILLA","peticion":"1317977591","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de 2 Deco"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"Inc000038935600","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038934786","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación de Deco"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1320183261","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-17","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"Inc000038938851","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1319608754","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RENE EDUARDO MAYORGA LEUQUEN","peticion":"1320177382","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de Deco"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1320263850","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"Inc000038938758","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1319862810","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1319089798","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":1,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1319009211","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1320169549","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"SI","altasFtth":"SI","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":3,"observaciones":"Hermano de cliente queda conforme."},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"Inc000038939364","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación de Deco"},{"fecha":"2026-07-20","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"JOAN JOEL HERNANDEZ AMAYA","peticion":"1321812848","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación del Deco"},{"fecha":"2026-07-21","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1320693208","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de 3 Décos"},{"fecha":"2026-07-21","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1320375498","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de Deco"},{"fecha":"2026-07-22","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1321781881","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Clienta queda conforme con servicio de Internet."},{"fecha":"2026-07-23","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038950337","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación sólo configuración"},{"fecha":"2026-07-23","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038953928","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del cambio de Deco"},{"fecha":"2026-07-23","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1322889344","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación del repartidor y a solicitó de cliente quedó por wifi"},{"fecha":"2026-07-23","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1322886388","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y dé tres décos"},{"fecha":"2026-07-24","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038957544","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-24","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1323191131","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-24","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1323267607","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé instaló 1 Deco"},{"fecha":"2026-07-24","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038955850","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-24","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GONZALO RODRIGO CARCAMO MALDONADO","peticion":"Inc000038957248","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038955659","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del Deco y solicita por wifi"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1324399295","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1323271262","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038957892","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1323561020","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1324698944","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1324781632","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de Deco"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1325015738","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-27","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GONZALO RODRIGO CARCAMO MALDONADO","peticion":"1324848573","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-28","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038964311","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-28","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038967420","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del Deco"},{"fecha":"2026-07-28","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038965947","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"NO","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del Deco"},{"fecha":"2026-07-28","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1325201535","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038956714","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del cambio dé módem"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1325312809","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"132322318","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GONZALO RODRIGO CARCAMO MALDONADO","peticion":"1325186850","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y 2 Décos"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1325729824","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y 2 Décos"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038956714","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Tamara Contrras","tecnico":"AXEL LEONARDO ALFARO ALVAREZ","peticion":"1324420876","actividad":"Rutina","zona":"Coyhaique","reutiliza":"SI","altasFtth":"OTRO","altasFtta":"OTRO","pasamuros":"OTRO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente queda conforme."},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1326397558","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-29","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1325721800","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038972239","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del cambio de módem"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038972502","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1326755889","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y 2 Décos"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1326576673","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la instalación del Deco"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GONZALO RODRIGO CARCAMO MALDONADO","peticion":"Inc000038972312","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del drop"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"GONZALO RODRIGO CARCAMO MALDONADO","peticion":"1327228171","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"1326787687","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar drops"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1326391150","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y de 3 Décos"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"RODRIGO EDUARDO GODOY CARCAMO","peticion":"Inc000038974192","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-07-30","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1326781192","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-07-31","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"Inc000038973797","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación y cambio de módem"},{"fecha":"2026-07-31","mes":"Jul-2026","auditor":"Juan Baez","tecnico":"CARLOS ALFONSO PINTO AGUILAR","peticion":"1327423516","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y un Deco"},{"fecha":"2026-08-03","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"Inc000038980247","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-08-03","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"RONIEL JESUS DIAZ SUAREZ","peticion":"Inc000038978840","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación de cambio de drop cliente iso cambio de fachada y dañó fibras"},{"fecha":"2026-08-03","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"Inc000038978595","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación cliente solicita levantar cable drop"},{"fecha":"2026-08-03","mes":"Ago-2026","auditor":"Tamara Contrras","tecnico":"JULIO LOPEZ CORTES","peticion":"1326123406","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Recibieron conforme"},{"fecha":"2026-08-03","mes":"Ago-2026","auditor":"Tamara Contrras","tecnico":"LUIS EDUARDO CISTERNAS OYARZO","peticion":"1327862526","actividad":"Instalacion","zona":"Coyhaique","reutiliza":"NO","altasFtth":"SI","altasFtta":"SI","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Se deja un deco cableado."},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"1327760658","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"Inc000038981501","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"1329289481","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación del Deco y quedó por cable"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"JUAN CARLOS ULLOA MORAGA","peticion":"1329327235","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación de 3 Décos"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"JUAN CARLOS ULLOA MORAGA","peticion":"Inc000038982658","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del cambio de módem"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"RONIEL JESUS DIAZ SUAREZ","peticion":"1329213593","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"SI","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y solicita reutilizar instalación y sé instala un Deco"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"RONIEL JESUS DIAZ SUAREZ","peticion":"Inc000038977915","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación del cambio de drop"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"Inc000038984315","actividad":"Reparacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"RONIEL JESUS DIAZ SUAREZ","peticion":"1329224947","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación a solicitó de cliente"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"JUAN CARLOS ULLOA MORAGA","peticion":"1329750300","actividad":"Rutina","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"NO","rotulaCto":"NO","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme la reparación de la rutina"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"LUIS ALFONSO BARRIENTOS MUNOZ","peticion":"1328419407","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación a solicitó de cliente"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"JUAN CARLOS ULLOA MORAGA","peticion":"1329364091","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"SI","altasFtth":"NO","altasFtta":"NO","pasamuros":"NO","reutilizaRoseta":"SI","medicionElectrica":"NO","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación y sé reutilizar instalación"},{"fecha":"2026-08-04","mes":"Ago-2026","auditor":"Juan Baez","tecnico":"RONIEL JESUS DIAZ SUAREZ","peticion":"1329284327","actividad":"Instalacion","zona":"Punta Arenas","reutiliza":"NO","altasFtth":"SI","altasFtta":"S/D","pasamuros":"NO","reutilizaRoseta":"NO","medicionElectrica":"SI","rotulaCto":"SI","areaLimpia":"SI","clienteConforme":"SI","capacitacion":"SI","servicioFunciona":"SI","entregaProtocolo":"SI","notaEstetica":4,"observaciones":"Cliente recibe conforme instalación"}]</script>
+<script>
+(function(){
+  "use strict";
+  const RAW = JSON.parse(document.getElementById('dataset').textContent);
+
+  const ZONE_LABEL = { "Puero Natales": "Puerto Natales" };
+  const zoneLabel = z => ZONE_LABEL[z] || z;
+
+  const ZONAS = ["Punta Arenas","Coyhaique","Puero Natales"].filter(z => RAW.some(r=>r.zona===z));
+  const MESES = ["Jun-2026","Jul-2026","Ago-2026"].filter(m => RAW.some(r=>r.mes===m));
+  const ACTIVIDADES = ["Instalacion","Reparacion","Rutina"].filter(a => RAW.some(r=>r.actividad===a));
+  const TECNICOS = Array.from(new Set(RAW.map(r=>r.tecnico))).sort((a,b)=>{
+    const ca = RAW.filter(r=>r.tecnico===a).length, cb = RAW.filter(r=>r.tecnico===b).length;
+    return cb-ca || a.localeCompare(b);
+  });
+
+  const CHECKLIST_ITEMS = [
+    {key:'pasamuros', label:'Instala pasa-muros'},
+    {key:'reutilizaRoseta', label:'Reutiliza roseta'},
+    {key:'medicionElectrica', label:'Realiza medición eléctrica'},
+    {key:'rotulaCto', label:'Rotula drop en CTO'},
+    {key:'altasFtth', label:'Reserva altas ambientes FTTH'},
+    {key:'altasFtta', label:'Reserva altas ambientes FTTA'},
+    {key:'capacitacion', label:'Capacitación al cliente'},
+    {key:'clienteConforme', label:'Cliente conforme'},
+    {key:'areaLimpia', label:'Deja área de trabajo limpia'},
+    {key:'entregaProtocolo', label:'Entrega información según protocolo'},
+  ];
+
+  const state = {
+    zonas: new Set(ZONAS),
+    meses: new Set(MESES),
+    actividades: new Set(ACTIVIDADES),
+    tecnico: "",
+    q: "",
+    page: 1,
+    pageSize: 25,
+    sortMain: { key:'fecha', dir:'asc' },
+    sortTec: { key:'auditorias', dir:'desc' },
+    expanded: new Set(),
+  };
+
+  const norm = s => (s||"").toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+
+  function pctSi(rows, key){
+    if(!rows.length) return 0;
+    return rows.filter(r=>r[key]==='SI').length / rows.length * 100;
+  }
+  function avgNota(rows){
+    if(!rows.length) return 0;
+    return rows.reduce((s,r)=>s+ (r.notaEstetica||0), 0) / rows.length;
+  }
+  function fmt1(n){ return (Math.round(n*10)/10).toFixed(1); }
+  function sem(value, kind){
+    if(kind==='nota') return value>=7 ? 'good' : value>=4 ? 'warn' : 'bad';
+    return value>=90 ? 'good' : value>=55 ? 'warn' : 'bad';
+  }
+
+  function filteredRows(){
+    return RAW.filter(r=>{
+      if(!state.zonas.has(r.zona)) return false;
+      if(!state.meses.has(r.mes)) return false;
+      if(!state.actividades.has(r.actividad)) return false;
+      if(state.tecnico && r.tecnico !== state.tecnico) return false;
+      if(state.q){
+        const q = norm(state.q);
+        const hay = norm(r.auditor+' '+r.tecnico+' '+r.peticion+' '+r.observaciones);
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  // ---------- Filter chips ----------
+  function buildChips(){
+    const zGrp = document.getElementById('grp-zona');
+    ZONAS.forEach(z=>{
+      const b = document.createElement('button');
+      b.className='chip active'; b.textContent = zoneLabel(z); b.dataset.val=z;
+      b.onclick = ()=>{ toggleSetVal(state.zonas, z, ZONAS); b.classList.toggle('active', state.zonas.has(z)); render(); };
+      zGrp.appendChild(b);
+    });
+    const mGrp = document.getElementById('grp-mes');
+    MESES.forEach(m=>{
+      const b = document.createElement('button');
+      b.className='chip active'; b.textContent = m; b.dataset.val=m;
+      b.onclick = ()=>{ toggleSetVal(state.meses, m, MESES); b.classList.toggle('active', state.meses.has(m)); render(); };
+      mGrp.appendChild(b);
+    });
+    const aGrp = document.getElementById('grp-actividad');
+    ACTIVIDADES.forEach(a=>{
+      const b = document.createElement('button');
+      b.className='chip active'; b.textContent = a; b.dataset.val=a;
+      b.onclick = ()=>{ toggleSetVal(state.actividades, a, ACTIVIDADES); b.classList.toggle('active', state.actividades.has(a)); render(); };
+      aGrp.appendChild(b);
+    });
+    const sel = document.getElementById('selTecnico');
+    TECNICOS.forEach(t=>{
+      const o = document.createElement('option'); o.value=t; o.textContent=t;
+      sel.appendChild(o);
+    });
+    sel.onchange = ()=>{ state.tecnico = sel.value; render(); };
+    document.getElementById('searchInput').oninput = (e)=>{ state.q = e.target.value; state.page=1; render(); };
+    document.getElementById('btnReset').onclick = resetFilters;
+  }
+  function toggleSetVal(set, val, all){
+    if(set.has(val)){
+      if(set.size>1) set.delete(val); else { all.forEach(v=>set.add(v)); }
+    } else set.add(val);
+    state.page = 1;
+  }
+  function resetFilters(){
+    state.zonas = new Set(ZONAS); state.meses = new Set(MESES); state.actividades = new Set(ACTIVIDADES);
+    state.tecnico=""; state.q=""; state.page=1;
+    document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));
+    document.getElementById('selTecnico').value='';
+    document.getElementById('searchInput').value='';
+    render();
+  }
+
+  // ---------- KPI ----------
+  function renderKPI(rows){
+    const total = rows.length;
+    const conforme = pctSi(rows,'clienteConforme');
+    const rotula = pctSi(rows,'rotulaCto');
+    const nota = avgNota(rows);
+    const reutiliza = pctSi(rows,'reutiliza');
+    const cards = [
+      { label:'Auditorías', value: total, unit:'', sub: total===192 ? 'Total del período' : `de 192 totales`, semv: 'neutral' },
+      { label:'% Cliente conforme', value: fmt1(conforme), unit:'%', sub:'Satisfacción declarada', semv: sem(conforme) },
+      { label:'% Rotula drop en CTO', value: fmt1(rotula), unit:'%', sub:'Ítem más débil del checklist', semv: sem(rotula) },
+      { label:'Nota estética prom.', value: fmt1(nota), unit:'/10', sub:'Escala 0–10', semv: sem(nota,'nota') },
+      { label:'% Reutiliza instalación', value: fmt1(reutiliza), unit:'%', sub:'Sobre el total filtrado', semv: sem(reutiliza) },
+    ];
+    const grid = document.getElementById('kpiGrid');
+    grid.innerHTML = cards.map(c=>`
+      <div class="kpi-card" data-sem="${c.semv}">
+        <div class="kpi-label">${c.label}</div>
+        <div class="kpi-value tabnum">${c.value}<span class="unit">${c.unit}</span></div>
+        <div class="kpi-sub">${c.sub}</div>
+      </div>`).join('');
+  }
+
+  // ---------- Panorama ----------
+  function renderPanorama(rows){
+    // Mensual
+    const mesRows = MESES.map(m=>{
+      const rs = rows.filter(r=>r.mes===m);
+      return { mes:m, n:rs.length, conforme:pctSi(rs,'clienteConforme'), rotula:pctSi(rs,'rotulaCto'), nota:avgNota(rs), reutiliza:pctSi(rs,'reutiliza') };
+    });
+    const maxMes = Math.max(1, ...mesRows.map(m=>m.n));
+    document.getElementById('mesBars').innerHTML = mesRows.map(m=>`
+      <div class="barrow">
+        <div class="barrow-label">${m.mes}</div>
+        <div class="barrow-track"><div class="barrow-fill" style="width:${m.n/maxMes*100}%; background:var(--accent);"></div></div>
+        <div class="barrow-value tabnum">${m.n}</div>
+      </div>`).join('');
+    document.getElementById('mesTable').innerHTML = `
+      <tr><th>Mes</th><th class="num">% Conf.</th><th class="num">% Rotula</th><th class="num">Nota</th><th class="num">% Reutiliza</th></tr>
+      ${mesRows.map(m=>`<tr><td>${m.mes}</td><td class="num tabnum">${fmt1(m.conforme)}</td><td class="num tabnum">${fmt1(m.rotula)}</td><td class="num tabnum">${fmt1(m.nota)}</td><td class="num tabnum">${fmt1(m.reutiliza)}</td></tr>`).join('')}
+    `;
+
+    // Zona
+    const zonaRows = ZONAS.map(z=>{
+      const rs = rows.filter(r=>r.zona===z);
+      return { zona:z, n:rs.length, conforme:pctSi(rs,'clienteConforme') };
+    }).sort((a,b)=>b.n-a.n);
+    const maxZona = Math.max(1, ...zonaRows.map(z=>z.n));
+    document.getElementById('zonaBars').innerHTML = zonaRows.map(z=>`
+      <div class="barrow" title="${fmt1(z.conforme)}% conforme">
+        <div class="barrow-label">${zoneLabel(z.zona)}</div>
+        <div class="barrow-track"><div class="barrow-fill" style="width:${z.n/maxZona*100}%; background:var(--accent);"></div></div>
+        <div class="barrow-value tabnum">${z.n}</div>
+      </div>`).join('') || '<div class="kpi-sub">Sin datos para los filtros actuales</div>';
+
+    // Actividad
+    const actRows = ACTIVIDADES.map(a=>{
+      const rs = rows.filter(r=>r.actividad===a);
+      return { act:a, n:rs.length };
+    }).sort((a,b)=>b.n-a.n);
+    const maxAct = Math.max(1, ...actRows.map(a=>a.n));
+    document.getElementById('actividadBars').innerHTML = actRows.map(a=>`
+      <div class="barrow">
+        <div class="barrow-label">${a.act}</div>
+        <div class="barrow-track"><div class="barrow-fill" style="width:${a.n/maxAct*100}%; background:var(--accent);"></div></div>
+        <div class="barrow-value tabnum">${a.n}</div>
+      </div>`).join('') || '<div class="kpi-sub">Sin datos para los filtros actuales</div>';
+  }
+
+  // ---------- Checklist ----------
+  function renderChecklist(rows){
+    const total = rows.length;
+    const items = CHECKLIST_ITEMS.map(it=>{
+      const si = rows.filter(r=>r[it.key]==='SI').length;
+      const no = rows.filter(r=>r[it.key]==='NO').length;
+      const otro = total - si - no;
+      const pct = total ? si/total*100 : 0;
+      return {...it, si, no, otro, pct};
+    }).sort((a,b)=>b.pct-a.pct);
+    document.getElementById('checklistList').innerHTML = items.map(it=>{
+      const s = sem(it.pct);
+      const color = s==='good' ? 'var(--good)' : s==='warn' ? 'var(--warn)' : 'var(--bad)';
+      return `
+      <div class="cl-row" title="SI: ${it.si} · NO: ${it.no} · Otro: ${it.otro}">
+        <div class="cl-label">${it.label}</div>
+        <div class="cl-track"><div class="cl-fill" style="width:${it.pct}%; background:${color};"></div></div>
+        <div class="cl-right">
+          <span class="cl-breakdown tabnum">${it.si}/${total}</span>
+          <span class="cl-pct tabnum" style="color:${color}">${fmt1(it.pct)}%</span>
+        </div>
+      </div>`;
+    }).join('') || '<div class="kpi-sub">Sin datos para los filtros actuales</div>';
+  }
+
+  // ---------- Técnicos ----------
+  function renderTecnicos(rows){
+    const byTec = {};
+    rows.forEach(r=>{
+      (byTec[r.tecnico] = byTec[r.tecnico] || []).push(r);
+    });
+    let list = Object.keys(byTec).map(t=>{
+      const rs = byTec[t];
+      return { tecnico:t, auditorias:rs.length, conforme:pctSi(rs,'clienteConforme'), nota:avgNota(rs), rotula:pctSi(rs,'rotulaCto') };
+    });
+    const { key, dir } = state.sortTec;
+    list.sort((a,b)=>{
+      let va=a[key], vb=b[key];
+      if(typeof va==='string') return dir==='asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      return dir==='asc' ? va-vb : vb-va;
+    });
+    document.getElementById('tecBody').innerHTML = list.map(t=>`
+      <tr>
+        <td>${t.tecnico}</td>
+        <td class="num tabnum">${t.auditorias}</td>
+        <td class="num tabnum"><span class="pill ${sem(t.conforme)}"><span class="pill-dot"></span>${fmt1(t.conforme)}%</span></td>
+        <td class="num tabnum">${fmt1(t.nota)}</td>
+        <td class="num tabnum">${fmt1(t.rotula)}%</td>
+      </tr>`).join('') || `<tr><td colspan="5" class="kpi-sub">Sin datos para los filtros actuales</td></tr>`;
+
+    document.querySelectorAll('#tecTable th[data-key]').forEach(th=>{
+      th.classList.toggle('sort-active', th.dataset.key===key);
+      th.querySelector('.arrow')?.remove();
+      if(th.dataset.key===key){
+        const arr = document.createElement('span'); arr.className='arrow'; arr.textContent = dir==='asc'?'▲':'▼';
+        th.appendChild(arr);
+      }
+    });
+  }
+
+  // ---------- Main table ----------
+  function badge(v){
+    const cls = v==='SI' ? 'si' : v==='NO' ? 'no' : 'otro';
+    return `<span class="tag ${cls}">${v||'—'}</span>`;
+  }
+  function renderMain(rows){
+    const { key, dir } = state.sortMain;
+    const sorted = [...rows].sort((a,b)=>{
+      let va=a[key], vb=b[key];
+      if(typeof va==='number') return dir==='asc'? va-vb : vb-va;
+      va = (va||'').toString(); vb=(vb||'').toString();
+      return dir==='asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+    const totalPages = Math.max(1, Math.ceil(sorted.length/state.pageSize));
+    if(state.page>totalPages) state.page = totalPages;
+    const start = (state.page-1)*state.pageSize;
+    const pageRows = sorted.slice(start, start+state.pageSize);
+
+    const body = document.getElementById('mainBody');
+    body.innerHTML = pageRows.map((r,i)=>{
+      const id = start+i;
+      const isOpen = state.expanded.has(id);
+      const row = `
+        <tr class="exp-row" data-id="${id}">
+          <td class="tabnum">${r.fecha}</td>
+          <td>${zoneLabel(r.zona)}</td>
+          <td>${r.actividad}</td>
+          <td>${r.auditor}</td>
+          <td>${r.tecnico}</td>
+          <td class="mono">${r.peticion}</td>
+          <td class="num tabnum">${fmt1(r.notaEstetica)}</td>
+          <td>${badge(r.clienteConforme)}</td>
+          <td>${badge(r.rotulaCto)}</td>
+          <td class="obs-cell" title="${(r.observaciones||'').replace(/"/g,'&quot;')}">${r.observaciones||''}</td>
+        </tr>`;
+      if(!isOpen) return row;
+      const items = CHECKLIST_ITEMS.map(it=>`
+        <div class="detail-item"><span class="di-label">${it.label}</span>${badge(r[it.key])}</div>`).join('');
+      const extra = [
+        {label:'Servicio funciona', v:r.servicioFunciona},
+        {label:'Entrega protocolo', v:r.entregaProtocolo},
+        {label:'Área limpia', v:r.areaLimpia},
+      ].map(x=>`<div class="detail-item"><span class="di-label">${x.label}</span>${badge(x.v)}</div>`).join('');
+      return row + `
+        <tr class="detail-row"><td colspan="10">
+          <div class="detail-grid">${items}${extra}</div>
+          <div class="detail-obs">${r.observaciones || 'Sin observaciones registradas.'}</div>
+        </td></tr>`;
+    }).join('') || `<tr><td colspan="10" class="kpi-sub">Sin resultados para los filtros / búsqueda actuales.</td></tr>`;
+
+    body.querySelectorAll('tr.exp-row').forEach(tr=>{
+      tr.onclick = ()=>{
+        const id = Number(tr.dataset.id);
+        state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
+        renderMain(filteredRows());
+      };
+    });
+
+    document.getElementById('pagerInfo').textContent = sorted.length
+      ? `Página ${state.page} de ${totalPages} · registros ${start+1}–${Math.min(start+state.pageSize, sorted.length)} de ${sorted.length}`
+      : 'Sin registros';
+    document.getElementById('pagerPrev').disabled = state.page<=1;
+    document.getElementById('pagerNext').disabled = state.page>=totalPages;
+
+    document.querySelectorAll('#mainTable th[data-key]').forEach(th=>{
+      th.classList.toggle('sort-active', th.dataset.key===key);
+      th.querySelector('.arrow')?.remove();
+      if(th.dataset.key===key){
+        const arr = document.createElement('span'); arr.className='arrow'; arr.textContent = dir==='asc'?'▲':'▼';
+        th.appendChild(arr);
+      }
+    });
+  }
+
+  function bindSort(){
+    document.querySelectorAll('#tecTable th[data-key]').forEach(th=>{
+      th.onclick = ()=>{
+        const k = th.dataset.key;
+        if(state.sortTec.key===k) state.sortTec.dir = state.sortTec.dir==='asc'?'desc':'asc';
+        else { state.sortTec.key=k; state.sortTec.dir = 'desc'; }
+        renderTecnicos(filteredRows());
+      };
+    });
+    document.querySelectorAll('#mainTable th[data-key]').forEach(th=>{
+      th.onclick = ()=>{
+        const k = th.dataset.key;
+        if(state.sortMain.key===k) state.sortMain.dir = state.sortMain.dir==='asc'?'desc':'asc';
+        else { state.sortMain.key=k; state.sortMain.dir = 'asc'; }
+        renderMain(filteredRows());
+      };
+    });
+    document.getElementById('pagerPrev').onclick = ()=>{ state.page--; renderMain(filteredRows()); };
+    document.getElementById('pagerNext').onclick = ()=>{ state.page++; renderMain(filteredRows()); };
+  }
+
+  function render(){
+    const rows = filteredRows();
+    document.getElementById('countShown').textContent = rows.length;
+    renderKPI(rows);
+    renderPanorama(rows);
+    renderChecklist(rows);
+    renderTecnicos(rows);
+    renderMain(rows);
+  }
+
+  buildChips();
+  bindSort();
+  render();
+})();
+</script>
