@@ -777,7 +777,7 @@
   function exportPDF(){
     updatePrintSummary();
     const prevPageSize = state.pageSize;
-    state.pageSize = Infinity;
+    state.pageSize = Math.max(RAW.length, 1);
     state.page = 1;
     renderMain(filteredRows());
     window.print();
@@ -786,7 +786,7 @@
     renderMain(filteredRows());
   }
   window.addEventListener('afterprint', ()=>{
-    if(state.pageSize === Infinity){
+    if(state.pageSize !== 25){
       state.pageSize = 25;
       state.page = 1;
       renderMain(filteredRows());
