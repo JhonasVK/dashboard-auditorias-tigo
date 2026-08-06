@@ -128,6 +128,16 @@
   }
   .btn-reset:hover { color:var(--bad); border-color:var(--bad); }
   .count-badge { font-weight:700; color:var(--ink); }
+  .btn-export {
+    display:inline-flex; align-items:center; gap:7px;
+    border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+    padding:6px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;
+    margin-left:auto;
+  }
+  .btn-export:hover { filter:brightness(1.08); }
+  .btn-export svg { flex:none; }
+
+  .print-only { display:none; }
 
   /* ---------- KPI grid ---------- */
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:24px; }
@@ -217,6 +227,34 @@
   footer.page { margin-top:36px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
 
   @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+
+  /* ---------- Impresión / PDF ---------- */
+  @media print {
+    :root, :root[data-theme="dark"], :root[data-theme="light"] {
+      --ink:#101B1D; --ink-soft:#3D4A57; --muted:#5A6672;
+      --paper:#FFFFFF; --card:#FFFFFF; --card-raised:#F7F8F9;
+      --border:#D7DCE1; --border-soft:#E7EAED;
+      --accent:#0067C3; --celeste:#2E9BE0; --navy:#003575;
+      --good:#1C8A5D; --warn:#95620B; --bad:#B33A2F;
+      --track:#E7EAED; --shadow:none;
+    }
+    body { font-size:11.5px; }
+    .wrap { max-width:none; padding:0 6mm 10mm; }
+    .filterbar { position:static; backdrop-filter:none; box-shadow:none; border:1px solid var(--border); }
+    .filterbar .chip, .filterbar select, .filterbar .searchbox, .filterbar .btn-reset, .filterbar .btn-export { display:none !important; }
+    .filter-group .fg-label { display:none; }
+    .filter-row:first-child { display:none; }
+    .print-only { display:block; font-size:12px; color:var(--ink-soft); }
+    .print-only strong { color:var(--ink); }
+    .brand-logo { box-shadow:none; }
+    table.data thead th { position:static; }
+    .obs-cell { max-width:none; overflow:visible; white-space:normal; text-overflow:clip; }
+    tr, .kpi-card, .panel { break-inside: avoid; }
+    section.block { break-inside: avoid-page; }
+    .pager { display:none; }
+    a[href]:after { content:""; }
+    .block-note { display:none; }
+  }
 </style>
 
 <div class="wrap">
@@ -233,7 +271,7 @@
       <span class="dot">·</span>
       <span>Período: Jun–Ago 2026</span>
       <span class="dot">·</span>
-      <span id="metaTotal">192 auditorías registradas</span>
+      <span id="metaTotal"></span>
     </div>
   </header>
 
@@ -259,11 +297,17 @@
         <input type="text" id="searchInput" placeholder="Buscar por auditor, técnico, N° petición u observación…" />
       </div>
       <div class="filter-status">
-        <span>Mostrando <span class="count-badge tabnum" id="countShown">192</span> de <span class="tabnum">192</span></span>
+        <span>Mostrando <span class="count-badge tabnum" id="countShown">192</span> de <span class="tabnum" id="countTotal">192</span></span>
         <button class="btn-reset" id="btnReset">Limpiar filtros</button>
+        <button class="btn-export" id="btnExport">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          Exportar a PDF
+        </button>
       </div>
     </div>
   </div>
+
+  <div class="print-only" id="printSummary"></div>
 
   <section class="kpi-grid" id="kpiGrid"></section>
 
@@ -704,12 +748,51 @@
   function render(){
     const rows = filteredRows();
     document.getElementById('countShown').textContent = rows.length;
+    document.getElementById('metaTotal').textContent = `${RAW.length} auditorías registradas`;
+    document.getElementById('countTotal').textContent = RAW.length;
     renderKPI(rows);
     renderPanorama(rows);
     renderChecklist(rows);
     renderTecnicos(rows);
     renderMain(rows);
   }
+
+  // ---------- Exportar a PDF ----------
+  function filterSummaryText(){
+    const parts = [];
+    parts.push(state.zonas.size===ZONAS.length ? 'Todas' : [...state.zonas].map(zoneLabel).join(', '));
+    const zonaTxt = parts[0];
+    const mesTxt = state.meses.size===MESES.length ? 'Todos' : [...state.meses].join(', ');
+    const actTxt = state.actividades.size===ACTIVIDADES.length ? 'Todas' : [...state.actividades].join(', ');
+    const tecTxt = state.tecnico || 'Todos';
+    const qTxt = state.q ? `"${state.q}"` : '—';
+    return `Zona: <strong>${zonaTxt}</strong> · Mes: <strong>${mesTxt}</strong> · Actividad: <strong>${actTxt}</strong> · Técnico: <strong>${tecTxt}</strong> · Búsqueda: <strong>${qTxt}</strong>`;
+  }
+  function updatePrintSummary(){
+    const now = new Date();
+    const fechaGen = now.toLocaleDateString('es-CL') + ' ' + now.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('printSummary').innerHTML =
+      `Generado el ${fechaGen} · ${document.getElementById('countShown').textContent} de ${RAW.length} auditorías · ${filterSummaryText()}`;
+  }
+  function exportPDF(){
+    updatePrintSummary();
+    const prevPageSize = state.pageSize;
+    state.pageSize = Infinity;
+    state.page = 1;
+    renderMain(filteredRows());
+    window.print();
+    state.pageSize = prevPageSize;
+    state.page = 1;
+    renderMain(filteredRows());
+  }
+  window.addEventListener('afterprint', ()=>{
+    if(state.pageSize === Infinity){
+      state.pageSize = 25;
+      state.page = 1;
+      renderMain(filteredRows());
+    }
+  });
+  document.getElementById('btnExport').onclick = exportPDF;
 
   buildChips();
   bindSort();
