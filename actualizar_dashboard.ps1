@@ -3,8 +3,12 @@
 
 $ErrorActionPreference = "Stop"
 
-$ExcelPath = "C:\Users\jvodn\Downloads\Web\BBDD\2-Formulario de auditorias de terreno TIGO (Respuestas).xlsx"
-$RepoDir   = "C:\Users\jvodn\Downloads\Web\dashboard-auditorias-tigo"
+# Rutas relativas a la ubicacion del propio script, para que funcione sin importar
+# en que unidad/carpeta vivan "Web" (siempre que BBDD y dashboard-auditorias-tigo
+# sigan siendo carpetas hermanas dentro de esa carpeta "Web").
+$RepoDir   = $PSScriptRoot
+$WebRoot   = Split-Path $RepoDir -Parent
+$ExcelPath = Join-Path $WebRoot "BBDD\2-Formulario de auditorias de terreno TIGO (Respuestas).xlsx"
 $TemplatePath = Join-Path $RepoDir "template.html"
 $OutputPath   = Join-Path $RepoDir "index.html"
 
