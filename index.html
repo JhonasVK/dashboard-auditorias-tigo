@@ -528,8 +528,20 @@
     const rotula = pctSi(rows,'rotulaCto');
     const nota = avgNota(rows);
     const reutiliza = pctSi(rows,'reutiliza');
+
+    const ayer = new Date();
+    ayer.setDate(ayer.getDate() - 1);
+    const ayerStr = ayer.getFullYear() + '-' + String(ayer.getMonth()+1).padStart(2,'0') + '-' + String(ayer.getDate()).padStart(2,'0');
+    const ayerLabel = ayer.toLocaleDateString('es-CL', {day:'numeric', month:'short', year:'numeric'});
+    const ayerCount = rows.filter(r=>r.fecha===ayerStr).length;
+
+    const diasConRegistro = new Set(rows.map(r=>r.fecha)).size;
+    const promedioDiario = diasConRegistro ? total/diasConRegistro : 0;
+
     const cards = [
-      { label:'Auditorías', value: total, unit:'', sub: total===192 ? 'Total del período' : `de 192 totales`, semv: 'neutral' },
+      { label:'Auditorías', value: total, unit:'', sub: total===RAW.length ? 'Total del período' : `de ${RAW.length} totales`, semv: 'neutral' },
+      { label:'Auditorías de ayer', value: ayerCount, unit:'', sub: ayerLabel, semv: 'neutral' },
+      { label:'Promedio diario', value: fmt1(promedioDiario), unit:'/día', sub: `Sobre ${diasConRegistro} día${diasConRegistro===1?'':'s'} con registros`, semv: 'neutral' },
       { label:'% Cliente conforme', value: fmt1(conforme), unit:'%', sub:'Satisfacción declarada', semv: sem(conforme) },
       { label:'% Rotula drop en CTO', value: fmt1(rotula), unit:'%', sub:'Ítem más débil del checklist', semv: sem(rotula) },
       { label:'Nota estética prom.', value: fmt1(nota), unit:'/10', sub:'Escala 0–10', semv: sem(nota,'nota') },
