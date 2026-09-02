@@ -410,7 +410,12 @@
   const zoneLabel = z => ZONE_LABEL[z] || z;
 
   const ZONAS = ["Punta Arenas","Coyhaique","Puero Natales"].filter(z => RAW.some(r=>r.zona===z));
-  const MESES = ["Jun-2026","Jul-2026","Ago-2026"].filter(m => RAW.some(r=>r.mes===m));
+  // Meses presentes en los datos, ordenados cronologicamente (no alfabeticamente) segun
+  // la fecha mas antigua de cada mes. Se calcula solo, asi un mes nuevo (ej. Sep-2026)
+  // aparece automaticamente sin tener que tocar este archivo cada vez.
+  const mesMinFecha = {};
+  RAW.forEach(r => { if (!mesMinFecha[r.mes] || r.fecha < mesMinFecha[r.mes]) mesMinFecha[r.mes] = r.fecha; });
+  const MESES = Object.keys(mesMinFecha).sort((a,b) => mesMinFecha[a].localeCompare(mesMinFecha[b]));
   const ACTIVIDADES = ["Instalacion","Reparacion","Rutina"].filter(a => RAW.some(r=>r.actividad===a));
   const TECNICOS = Array.from(new Set(RAW.map(r=>r.tecnico))).sort((a,b)=>{
     const ca = RAW.filter(r=>r.tecnico===a).length, cb = RAW.filter(r=>r.tecnico===b).length;
