@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auditorías de Terreno — TIGO</title>
 <style>
   @media (prefers-color-scheme: dark) {
@@ -88,6 +90,7 @@
   h1.title { font-size: clamp(22px,2.6vw,30px); letter-spacing:-0.01em; }
   .meta-line { color: var(--muted); font-size:13.5px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .meta-line .dot { opacity:.5; }
+  .meta-line .meta-actualizado strong { color: var(--ink); }
 
   /* ---------- Filter bar ---------- */
   .filterbar {
@@ -269,9 +272,11 @@
       <span class="dot">·</span>
       <span>Zonas: Punta Arenas, Coyhaique, Puerto Natales</span>
       <span class="dot">·</span>
-      <span>Período: Jun–Ago 2026</span>
+      <span id="metaPeriodo"></span>
       <span class="dot">·</span>
       <span id="metaTotal"></span>
+      <span class="dot">·</span>
+      <span class="meta-actualizado">Actualizado: <strong>__ACTUALIZADO__</strong></span>
     </div>
   </header>
 
@@ -395,8 +400,8 @@
   </section>
 
   <footer class="page">
-    <span>Fuente: Dashboard_Auditorias_TIGO.xlsx · hoja "Datos" (192 registros)</span>
-    <span>Panel generado a partir del archivo Excel original</span>
+    <span>Fuente: Formulario de auditorías de terreno TIGO (Google Forms) · <span id="footTotal"></span></span>
+    <span>Actualizado: __ACTUALIZADO__</span>
   </footer>
 </div>
 
@@ -766,6 +771,11 @@
     const rows = filteredRows();
     document.getElementById('countShown').textContent = rows.length;
     document.getElementById('metaTotal').textContent = `${RAW.length} auditorías registradas`;
+    document.getElementById('footTotal').textContent = `${RAW.length} registros`;
+    if (MESES.length) {
+      const ini = MESES[0], fin = MESES[MESES.length - 1];
+      document.getElementById('metaPeriodo').textContent = `Período: ${ini === fin ? ini : ini + ' – ' + fin}`;
+    }
     document.getElementById('countTotal').textContent = RAW.length;
     renderKPI(rows);
     renderPanorama(rows);

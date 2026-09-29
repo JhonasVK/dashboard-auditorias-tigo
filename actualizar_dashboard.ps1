@@ -175,7 +175,8 @@ if ($json -match '</script') { Write-Host "ERROR: los datos contienen una secuen
 # ---------- 4. Inyectar en la plantilla ----------
 if (-not (Test-Path $TemplatePath)) { Write-Host "ERROR: no se encontró template.html en $RepoDir" -ForegroundColor Red; exit 1 }
 $html = Get-Content $TemplatePath -Raw -Encoding UTF8
-$final = $html.Replace('/*__DATA__*/', $json)
+$actualizado = Get-Date -Format 'dd-MM-yyyy HH:mm'
+$final = $html.Replace('/*__DATA__*/', $json).Replace('__ACTUALIZADO__', $actualizado)
 [System.IO.File]::WriteAllText($OutputPath, $final, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "==> index.html regenerado ($((Get-Item $OutputPath).Length) bytes)"
 
