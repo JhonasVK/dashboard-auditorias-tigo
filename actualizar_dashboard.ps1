@@ -1,14 +1,12 @@
-# Actualiza el dashboard TIGO a partir del Excel y lo publica en GitHub Pages.
+﻿# Actualiza el dashboard TIGO a partir del Excel y lo publica en GitHub Pages.
 # Uso: doble clic en "Actualizar_Dashboard.bat", o ejecutar este script en PowerShell.
 
 $ErrorActionPreference = "Stop"
 
-# Rutas relativas a la ubicacion del propio script, para que funcione sin importar
-# en que unidad/carpeta vivan "Web" (siempre que BBDD y dashboard-auditorias-tigo
-# sigan siendo carpetas hermanas dentro de esa carpeta "Web").
+# Rutas relativas a la ubicacion del propio script. La base esta en la carpeta
+# BBDD dentro de este mismo proyecto (no se sube a GitHub, ver .gitignore).
 $RepoDir   = $PSScriptRoot
-$WebRoot   = Split-Path $RepoDir -Parent
-$ExcelPath = Join-Path $WebRoot "BBDD\2-Formulario de auditorias de terreno TIGO (Respuestas).xlsx"
+$ExcelPath = Join-Path $RepoDir "BBDD\2-Formulario de auditorias de terreno TIGO (Respuestas).xlsx"
 $TemplatePath = Join-Path $RepoDir "template.html"
 $OutputPath   = Join-Path $RepoDir "index.html"
 
@@ -190,7 +188,11 @@ try {
         Write-Host "==> No hay cambios respecto a la última publicación. Nada que subir."
     } else {
         $fecha = Get-Date -Format "yyyy-MM-dd HH:mm"
-        git commit -q -m "Actualizar datos de auditorías ($fecha)"
+        # El mensaje va por archivo UTF-8: pasado como argumento, PowerShell 5.1 rompe las tildes
+        $msgFile = Join-Path $env:TEMP 'tigo_commit_msg.txt'
+        [System.IO.File]::WriteAllText($msgFile, "Actualizar datos de auditorías ($fecha)", (New-Object System.Text.UTF8Encoding($false)))
+        git commit -q -F $msgFile
+        Remove-Item $msgFile -ErrorAction SilentlyContinue
         if ($LASTEXITCODE -ne 0) {
             Write-Host "ERROR: el commit falló. Revisa el mensaje de git de arriba (por ejemplo, identidad de git no configurada)." -ForegroundColor Red
             exit 1
