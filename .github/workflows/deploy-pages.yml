@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/index.html
+          if [ -f actualizado.txt ]; then cp actualizado.txt _site/actualizado.txt; fi
           touch _site/.nojekyll
 
       - name: Configurar Pages

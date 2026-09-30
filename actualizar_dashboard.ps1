@@ -179,11 +179,13 @@ $actualizado = Get-Date -Format 'dd-MM-yyyy HH:mm'
 $final = $html.Replace('/*__DATA__*/', $json).Replace('__ACTUALIZADO__', $actualizado)
 [System.IO.File]::WriteAllText($OutputPath, $final, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "==> index.html regenerado ($((Get-Item $OutputPath).Length) bytes)"
+# Misma fecha en un archivo aparte: la lee en vivo la tarjeta del indice Supervisor
+[System.IO.File]::WriteAllText((Join-Path $RepoDir 'actualizado.txt'), $actualizado, (New-Object System.Text.UTF8Encoding($false)))
 
 # ---------- 5. Commit y push ----------
 Push-Location $RepoDir
 try {
-    git add index.html | Out-Null
+    git add index.html actualizado.txt | Out-Null
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "==> No hay cambios respecto a la última publicación. Nada que subir."
