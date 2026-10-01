@@ -1,6 +1,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auditorías de Terreno — TIGO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
   @media (prefers-color-scheme: dark) {
     :root {
@@ -257,6 +260,91 @@
     .pager { display:none; }
     a[href]:after { content:""; }
     .block-note { display:none; }
+  }
+
+  /* ================= Formato Academia Tecnica (ver diseno-academia.json) =================
+     Tema claro unico (decision de marca): azul marino + ambar, esquinas rectas, titulos livianos. */
+  :root, :root[data-theme="dark"], :root[data-theme="light"] {
+    color-scheme: light;
+    --ink:#334155; --ink-soft:#334155; --muted:#62646e;
+    --paper:#f2f2f2; --card:#ffffff; --card-raised:#f7f8fa;
+    --border:#d9dbe0; --border-soft:#e6e8ec;
+    --accent:#003575; --accent-ink:#ffffff; --accent-soft:#eef2f9;
+    --celeste:#3c62ac; --celeste-soft:#eef2f9;
+    --navy:#003575;
+    --good:#1f7a45; --good-soft:#e2f1e8;
+    --warn:#9a5b00; --warn-soft:#fdf1d8;
+    --bad:#c0392b; --bad-soft:#fbe9e6;
+    --track:#e6e8ec; --shadow:none;
+    --amber:#f0a500;
+    --font:"Helvetica Neue","Hanken Grotesk",Helvetica,Arial,sans-serif;
+  }
+  body { font-family: var(--font); font-size:15px; line-height:1.55; }
+  .mono, .tabnum { font-family:"IBM Plex Mono", ui-monospace, Consolas, monospace; }
+  .wrap { padding-top:0; padding-bottom:0; }
+
+  /* cabecera a todo el ancho, con la foto del tecnico */
+  header.page {
+    gap:16px; border-bottom:0; margin:0 calc(-1 * clamp(16px,3.4vw,40px)) 28px;
+    padding:44px clamp(16px,3.4vw,40px) 48px; color:#ffffff;
+    background:linear-gradient(90deg,#003575 0%,#003575 34%,rgba(0,53,117,.84) 52%,rgba(0,53,117,.38) 74%,rgba(0,53,117,.12) 100%),
+               url("fondo-portada.jpg") 70% 24% / cover no-repeat #003575;
+    box-shadow:0 0 0 100vmax #003575; clip-path:inset(0 -100vmax);
+  }
+  @media (max-width:760px){ header.page{ background-image:linear-gradient(90deg,rgba(0,53,117,.95),rgba(0,53,117,.82)), url("fondo-portada.jpg"); } }
+  .brand-row { flex-direction:column; align-items:flex-start; gap:20px; }
+  .brand-logo { border-radius:0; box-shadow:none; height:44px; padding:6px 12px; }
+  h1.title { font-weight:200; font-size:clamp(32px,4.6vw,52px); line-height:1.08; letter-spacing:.01em; color:#ffffff; }
+  .meta-line { color:#c9d7ee; font-size:15px; font-weight:300; }
+  .meta-line .meta-actualizado strong { color:#ffffff; font-weight:600; }
+
+  /* filtros */
+  .filterbar { border-radius:0; background:color-mix(in srgb, #ffffff 94%, transparent); border:0; border-top:3px solid var(--navy); box-shadow:0 14px 30px -24px rgba(0,53,117,.55); padding:16px 20px; }
+  .filter-group .fg-label { font-weight:600; letter-spacing:.12em; color:var(--celeste); }
+  .chip { border-radius:2px; font-weight:600; }
+  .chip:hover { border-color:var(--navy); }
+  select.techsel, .searchbox input { border-radius:2px; border-color:#b9c0cc; font-size:15px; padding-top:9px; padding-bottom:9px; }
+  .searchbox input:focus { outline:2px solid var(--amber); outline-offset:1px; }
+  .btn-reset { border-radius:2px; border-color:var(--navy); color:var(--navy); font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:9px 14px; }
+  .btn-export { border-radius:2px; border-color:var(--amber); background:var(--amber); color:#1d1a12; font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; }
+  .btn-export:hover { filter:none; background:#ffb61a; border-color:#ffb61a; }
+
+  /* cifras */
+  .kpi-grid { gap:16px; margin-bottom:56px; }
+  .kpi-card { border-radius:0; border-left:0; border-right:0; border-bottom:0; padding:20px 22px; }
+  .kpi-card[data-sem="neutral"] { border-top-color:var(--navy); }
+  .kpi-label { font-weight:600; letter-spacing:.1em; font-size:11px; }
+  .kpi-value { font-family:var(--font); font-weight:200; font-size:42px; color:var(--navy); }
+  .kpi-value .unit { font-weight:400; }
+  .pill, .tag { border-radius:0; font-weight:600; }
+
+  /* secciones */
+  section.block { margin-bottom:56px; }
+  .block-head { margin-bottom:18px; align-items:end; }
+  .block-head h2 { font:300 28px/1.15 var(--font); color:var(--navy); text-transform:uppercase; letter-spacing:.04em; }
+  .eyebrow { font-weight:600; letter-spacing:.14em; font-size:12px; color:var(--celeste); }
+  .panel { border:0; border-radius:0; padding:22px 24px; }
+  .barrow-track, .barrow-fill, .cl-track, .cl-fill { border-radius:0; }
+
+  /* tablas */
+  .table-scroll { border-radius:0; }
+  table.mini th, table.data th { background:var(--navy); color:#ffffff; font-weight:600; letter-spacing:.1em; border-bottom:0; padding:11px 12px; }
+  table.data th:hover, th.sort-active { color:#ffd27a; }
+  table.data td, table.mini td { padding-left:12px; padding-right:12px; }
+  .pager button { border-radius:2px; border-color:var(--navy); color:var(--navy); font-weight:600; letter-spacing:.06em; text-transform:uppercase; font-size:12px; padding:8px 14px; }
+  .pager button:not(:disabled):hover { background:#f2f5fa; }
+
+  /* pie */
+  footer.page { margin:0 calc(-1 * clamp(16px,3.4vw,40px)); padding:28px clamp(16px,3.4vw,40px); border-top:0; background:#003575; color:#c9d7ee;
+    font-weight:300; letter-spacing:.1em; text-transform:uppercase; box-shadow:0 0 0 100vmax #003575; clip-path:inset(0 -100vmax); }
+
+  @media print {
+    header.page { background:#ffffff; color:var(--ink); box-shadow:none; clip-path:none; margin:0 0 14px; padding:0 0 12px; border-bottom:2px solid #003575; }
+    h1.title { color:#003575; font-size:24px; } .meta-line { color:var(--muted); font-size:12px; } .meta-line .meta-actualizado strong { color:var(--ink); }
+    .brand-row { flex-direction:row; align-items:center; } .brand-logo { padding:0; height:34px; }
+    .kpi-value { font-size:26px; } .block-head h2 { font-size:17px; } section.block, .kpi-grid { margin-bottom:22px; }
+    table.mini th, table.data th { background:#003575 !important; color:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    footer.page { background:#ffffff; color:var(--muted); box-shadow:none; clip-path:none; margin:24px 0 0; padding:12px 0 0; border-top:1px solid var(--border); }
   }
 </style>
 
